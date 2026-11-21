@@ -1,0 +1,458 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Global hardened primitives
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidRaceId(raceId) {
+      return raceId in ['humano', 'elfo', 'enano', 'draconido', 'espectro_raza'];
+    }
+
+    function isValidClassId(classId) {
+      return classId in [
+        'caballero_runico',
+        'piromago',
+        'asesino_sombras',
+        'paladin_solar',
+        'cazador_dragones'
+      ];
+    }
+
+    function isValidDifficultyId(difficultyId) {
+      return difficultyId in ['normal', 'dificil', 'pesadilla', 'abismal', 'infierno'];
+    }
+
+    function isValidMapId(mapId) {
+      return mapId in ['plaza', 'templo'];
+    }
+
+    function isValidClanFields(data) {
+      return (!('clanName' in data) || (data.clanName is string && data.clanName.size() >= 1 && data.clanName.size() <= 28))
+        && (!('clanTag' in data) || (data.clanTag is string && data.clanTag.size() >= 2 && data.clanTag.size() <= 5 && data.clanTag.matches('^[A-Z0-9]+$')))
+        && (!('clanColor' in data) || (data.clanColor is string && data.clanColor.matches('^#[0-9a-fA-F]{6}$')));
+    }
+
+    function isValidRequiredClanFields(data) {
+      return ('clanName' in data && data.clanName is string && data.clanName.size() >= 1 && data.clanName.size() <= 28)
+        && ('clanTag' in data && data.clanTag is string && data.clanTag.size() >= 2 && data.clanTag.size() <= 5 && data.clanTag.matches('^[A-Z0-9]+$'))
+        && ('clanColor' in data && data.clanColor is string && data.clanColor.matches('^#[0-9a-fA-F]{6}$'));
+    }
+
+    function isValidAttributesMap(attrs) {
+      return attrs is map
+        && attrs.keys().hasAll(['fuerza', 'agilidad', 'vitalidad', 'inteligencia', 'suerte'])
+        && attrs.keys().hasOnly(['fuerza', 'agilidad', 'vitalidad', 'inteligencia', 'suerte'])
+        && attrs.fuerza is int && attrs.fuerza >= 1 && attrs.fuerza <= 100000
+        && attrs.agilidad is int && attrs.agilidad >= 1 && attrs.agilidad <= 100000
+        && attrs.vitalidad is int && attrs.vitalidad >= 1 && attrs.vitalidad <= 100000
+        && attrs.inteligencia is int && attrs.inteligencia >= 1 && attrs.inteligencia <= 100000
+        && attrs.suerte is int && attrs.suerte >= 1 && attrs.suerte <= 100000;
+    }
+
+    function isValidDragonHeartsMap(hearts) {
+      return hearts is map
+        && hearts.keys().hasAll([
+          'corazon_dragon_rojo',
+          'corazon_dragon_negro',
+          'corazon_dragon_verde',
+          'corazon_dragon_celeste',
+          'corazon_dragon_amarillo'
+        ])
+        && hearts.keys().hasOnly([
+          'corazon_dragon_rojo',
+          'corazon_dragon_negro',
+          'corazon_dragon_verde',
+          'corazon_dragon_celeste',
+          'corazon_dragon_amarillo'
+        ])
+        && hearts.corazon_dragon_rojo is int && hearts.corazon_dragon_rojo >= 0 && hearts.corazon_dragon_rojo <= 99999
+        && hearts.corazon_dragon_negro is int && hearts.corazon_dragon_negro >= 0 && hearts.corazon_dragon_negro <= 99999
+        && hearts.corazon_dragon_verde is int && hearts.corazon_dragon_verde >= 0 && hearts.corazon_dragon_verde <= 99999
+        && hearts.corazon_dragon_celeste is int && hearts.corazon_dragon_celeste >= 0 && hearts.corazon_dragon_celeste <= 99999
+        && hearts.corazon_dragon_amarillo is int && hearts.corazon_dragon_amarillo >= 0 && hearts.corazon_dragon_amarillo <= 99999;
+    }
+
+    function isValidPlayerProfile(data, userId) {
+      return data.keys().hasAll([
+          'uid',
+          'playerName',
+          'raceId',
+          'classId',
+          'difficultyId',
+          'level',
+          'xp',
+          'gold',
+          'kills',
+          'rebirths',
+          'attributePoints',
+          'talentPoints',
+          'attributes',
+          'dragonHearts',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'uid',
+          'playerName',
+          'clanName',
+          'clanTag',
+          'clanColor',
+          'raceId',
+          'classId',
+          'difficultyId',
+          'selectedTitleId',
+          'level',
+          'xp',
+          'gold',
+          'kills',
+          'rebirths',
+          'attributePoints',
+          'talentPoints',
+          'attributes',
+          'dragonHearts',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.uid is string
+        && isValidId(data.uid)
+        && data.uid == userId
+        && data.uid == request.auth.uid
+        && data.playerName is string
+        && data.playerName.size() >= 1
+        && data.playerName.size() <= 24
+        && isValidClanFields(data)
+        && isValidRaceId(data.raceId)
+        && isValidClassId(data.classId)
+        && isValidDifficultyId(data.difficultyId)
+        && (!('selectedTitleId' in data) || (data.selectedTitleId is string && data.selectedTitleId.size() <= 64))
+        && data.level is int && data.level >= 1 && data.level <= 9999
+        && data.xp is int && data.xp >= 0 && data.xp <= 1000000000
+        && data.gold is int && data.gold >= 0 && data.gold <= 1000000000
+        && data.kills is int && data.kills >= 0 && data.kills <= 1000000000
+        && data.rebirths is int && data.rebirths >= 0 && data.rebirths <= 10000
+        && data.attributePoints is int && data.attributePoints >= 0 && data.attributePoints <= 500000
+        && data.talentPoints is int && data.talentPoints >= 0 && data.talentPoints <= 50000
+        && isValidAttributesMap(data.attributes)
+        && isValidDragonHeartsMap(data.dragonHearts)
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidLeaderboardEntry(data, userId) {
+      return data.keys().hasAll([
+          'uid',
+          'playerName',
+          'raceId',
+          'classId',
+          'difficultyId',
+          'gold',
+          'kills',
+          'level',
+          'rebirths',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'uid',
+          'playerName',
+          'clanName',
+          'clanTag',
+          'clanColor',
+          'titleName',
+          'raceId',
+          'classId',
+          'difficultyId',
+          'gold',
+          'kills',
+          'level',
+          'rebirths',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.uid is string
+        && isValidId(data.uid)
+        && data.uid == userId
+        && data.uid == request.auth.uid
+        && data.playerName is string
+        && data.playerName.size() >= 1
+        && data.playerName.size() <= 24
+        && isValidClanFields(data)
+        && (!('titleName' in data) || (data.titleName is string && data.titleName.size() <= 48))
+        && isValidRaceId(data.raceId)
+        && isValidClassId(data.classId)
+        && isValidDifficultyId(data.difficultyId)
+        && data.gold is int && data.gold >= 0 && data.gold <= 1000000000
+        && data.kills is int && data.kills >= 0 && data.kills <= 1000000000
+        && data.level is int && data.level >= 1 && data.level <= 9999
+        && data.rebirths is int && data.rebirths >= 0 && data.rebirths <= 10000
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidOnlinePlayer(data, userId) {
+      return data.keys().hasAll([
+          'uid',
+          'playerName',
+          'clanName',
+          'clanTag',
+          'clanColor',
+          'raceId',
+          'classId',
+          'level',
+          'rebirths',
+          'mapId',
+          'x',
+          'z',
+          'yaw',
+          'isMoving',
+          'isOnline',
+          'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'uid',
+          'playerName',
+          'clanName',
+          'clanTag',
+          'clanColor',
+          'raceId',
+          'classId',
+          'level',
+          'rebirths',
+          'titleName',
+          'mapId',
+          'x',
+          'z',
+          'yaw',
+          'isMoving',
+          'isOnline',
+          'updatedAt'
+        ])
+        && data.uid is string
+        && isValidId(data.uid)
+        && data.uid == userId
+        && data.uid == request.auth.uid
+        && data.playerName is string
+        && data.playerName.size() >= 1
+        && data.playerName.size() <= 24
+        && isValidRequiredClanFields(data)
+        && isValidRaceId(data.raceId)
+        && isValidClassId(data.classId)
+        && data.level is int && data.level >= 1 && data.level <= 9999
+        && data.rebirths is int && data.rebirths >= 0 && data.rebirths <= 10000
+        && (!('titleName' in data) || (data.titleName is string && data.titleName.size() <= 48))
+        && isValidMapId(data.mapId)
+        && data.x is number && data.x >= -300 && data.x <= 300
+        && data.z is number && data.z >= -300 && data.z <= 300
+        && data.yaw is number && data.yaw >= -100 && data.yaw <= 100
+        && data.isMoving is bool
+        && data.isOnline is bool
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidChatMessage(data, messageId) {
+      return data.keys().hasAll([
+          'id',
+          'uid',
+          'playerName',
+          'clanName',
+          'clanTag',
+          'clanColor',
+          'channel',
+          'mapId',
+          'text',
+          'createdAt'
+        ])
+        && data.keys().hasOnly([
+          'id',
+          'uid',
+          'playerName',
+          'clanName',
+          'clanTag',
+          'clanColor',
+          'channel',
+          'mapId',
+          'text',
+          'createdAt'
+        ])
+        && data.id is string
+        && isValidId(data.id)
+        && data.id == messageId
+        && data.uid is string
+        && isValidId(data.uid)
+        && data.uid == request.auth.uid
+        && data.playerName is string
+        && data.playerName.size() >= 1
+        && data.playerName.size() <= 24
+        && isValidRequiredClanFields(data)
+        && data.channel in ['global', 'clan']
+        && isValidMapId(data.mapId)
+        && data.text is string
+        && data.text.size() >= 1
+        && data.text.size() <= 240
+        && data.createdAt is timestamp;
+    }
+
+    // Owner-only saved progression profiles (zero PII)
+    match /players/{userId} {
+      allow get: if isValidId(userId) && isOwner(userId);
+      allow list: if false;
+      allow create: if isValidId(userId)
+        && isVerifiedUser()
+        && isOwner(userId)
+        && isValidPlayerProfile(incoming(), userId)
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isValidId(userId)
+        && isVerifiedUser()
+        && isOwner(userId)
+        && isValidPlayerProfile(incoming(), userId)
+        && incoming().uid == existing().uid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'playerName',
+          'clanName',
+          'clanTag',
+          'clanColor',
+          'raceId',
+          'classId',
+          'difficultyId',
+          'selectedTitleId',
+          'level',
+          'xp',
+          'gold',
+          'kills',
+          'rebirths',
+          'attributePoints',
+          'talentPoints',
+          'attributes',
+          'dragonHearts',
+          'updatedAt'
+        ]);
+      allow delete: if isValidId(userId) && isOwner(userId);
+    }
+
+    // Public global rankings without PII
+    match /leaderboard/{userId} {
+      allow get: if isValidId(userId) && isSignedIn();
+      allow list: if isSignedIn() && (
+        resource.data.gold >= 0 ||
+        resource.data.kills >= 0 ||
+        resource.data.level >= 1 ||
+        resource.data.rebirths >= 0
+      );
+      allow create: if isValidId(userId)
+        && isVerifiedUser()
+        && isOwner(userId)
+        && isValidLeaderboardEntry(incoming(), userId)
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isValidId(userId)
+        && isVerifiedUser()
+        && isOwner(userId)
+        && isValidLeaderboardEntry(incoming(), userId)
+        && incoming().uid == existing().uid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'playerName',
+          'clanName',
+          'clanTag',
+          'clanColor',
+          'titleName',
+          'raceId',
+          'classId',
+          'difficultyId',
+          'gold',
+          'kills',
+          'level',
+          'rebirths',
+          'updatedAt'
+        ]);
+      allow delete: if isValidId(userId) && isOwner(userId);
+    }
+
+    // Real-time online player presence & 3D avatar sync
+    match /online_players/{userId} {
+      allow get: if isValidId(userId) && isSignedIn();
+      allow list: if isSignedIn() && (
+        resource.data.isOnline == true ||
+        resource.data.isOnline == false
+      ) && isValidMapId(resource.data.mapId);
+      allow create: if isValidId(userId)
+        && isVerifiedUser()
+        && isOwner(userId)
+        && isValidOnlinePlayer(incoming(), userId)
+        && incoming().updatedAt == request.time;
+      allow update: if isValidId(userId)
+        && isVerifiedUser()
+        && isOwner(userId)
+        && isValidOnlinePlayer(incoming(), userId)
+        && incoming().uid == existing().uid
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'playerName',
+          'clanName',
+          'clanTag',
+          'clanColor',
+          'raceId',
+          'classId',
+          'level',
+          'rebirths',
+          'titleName',
+          'mapId',
+          'x',
+          'z',
+          'yaw',
+          'isMoving',
+          'isOnline',
+          'updatedAt'
+        ]);
+      allow delete: if isValidId(userId) && isOwner(userId);
+    }
+
+    // Real-time global & clan chat messages
+    match /chat_messages/{messageId} {
+      allow get: if isValidId(messageId) && isSignedIn();
+      allow list: if isSignedIn()
+        && resource.data.channel in ['global', 'clan']
+        && resource.data.text is string;
+      allow create: if isValidId(messageId)
+        && isVerifiedUser()
+        && isValidChatMessage(incoming(), messageId)
+        && incoming().createdAt == request.time;
+      allow update: if false;
+      allow delete: if isValidId(messageId)
+        && isSignedIn()
+        && existing().uid == request.auth.uid;
+    }
+  }
+}

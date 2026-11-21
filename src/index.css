@@ -1,0 +1,139 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root {
+    --font-display: 'Cinzel', Georgia, serif;
+    --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  html,
+  body,
+  #root {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    font-family: var(--font-sans);
+    background-color: #0b0d12;
+    color: #ece6d8;
+  }
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-mono-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Custom subtle dark scrollbars for RPG panels */
+.rpg-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.rpg-scroll::-webkit-scrollbar-track {
+  background: rgba(12, 14, 20, 0.6);
+}
+
+.rpg-scroll::-webkit-scrollbar-thumb {
+  background: rgba(180, 142, 74, 0.35);
+  border-radius: 3px;
+}
+
+.rpg-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(212, 175, 95, 0.6);
+}
+
+@keyframes float-up-fade {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -44px) scale(1.08);
+  }
+}
+
+.animate-damage-float {
+  animation: float-up-fade 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes achievement-toast-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-achievement-in {
+  animation: achievement-toast-in 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes status-poison-pulse {
+  0%, 100% {
+    opacity: 0.9;
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-1.5px) scale(1.14);
+  }
+}
+
+@keyframes status-burn-flicker {
+  0%, 100% {
+    opacity: 0.92;
+    transform: translateY(0) scale(1) rotate(-3deg);
+  }
+  33% {
+    opacity: 1;
+    transform: translateY(-1.5px) scale(1.15) rotate(4deg);
+  }
+  66% {
+    opacity: 0.85;
+    transform: translateY(-0.5px) scale(1.06) rotate(-2deg);
+  }
+}
+
+@keyframes status-slow-chill {
+  0%, 100% {
+    opacity: 0.88;
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1) rotate(18deg);
+  }
+}
+
+.animate-status-poison {
+  animation: status-poison-pulse 1.3s ease-in-out infinite;
+}
+
+.animate-status-burn {
+  animation: status-burn-flicker 0.85s ease-in-out infinite;
+}
+
+.animate-status-slow {
+  animation: status-slow-chill 2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-status-poison,
+  .animate-status-burn,
+  .animate-status-slow {
+    animation: none;
+  }
+}
+

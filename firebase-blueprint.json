@@ -1,0 +1,404 @@
+{
+  "entities": {
+    "PlayerProfile": {
+      "title": "PlayerProfile",
+      "description": "Cloud-saved RPG progression profile owned by an authenticated player.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Firebase Auth UID of the owning player.",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "playerName": {
+          "type": "string",
+          "description": "Custom RPG character name chosen by the player.",
+          "minLength": 1,
+          "maxLength": 24
+        },
+        "clanName": {
+          "type": "string",
+          "description": "Player clan display name.",
+          "minLength": 1,
+          "maxLength": 28
+        },
+        "clanTag": {
+          "type": "string",
+          "description": "Uppercase clan emblem tag (2-5 chars).",
+          "minLength": 2,
+          "maxLength": 5,
+          "pattern": "^[A-Z0-9]+$"
+        },
+        "clanColor": {
+          "type": "string",
+          "description": "Hex color of the player's clan banner.",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "raceId": {
+          "type": "string",
+          "description": "Selected RPG race identifier.",
+          "enum": ["humano", "elfo", "enano", "draconido", "espectro_raza"]
+        },
+        "classId": {
+          "type": "string",
+          "description": "Selected RPG class identifier.",
+          "enum": ["caballero_runico", "piromago", "asesino_sombras", "paladin_solar", "cazador_dragones"]
+        },
+        "difficultyId": {
+          "type": "string",
+          "description": "Active world difficulty tier.",
+          "enum": ["normal", "dificil", "pesadilla", "abismal", "infierno"]
+        },
+        "selectedTitleId": {
+          "type": "string",
+          "description": "Equipped cosmetic player title identifier.",
+          "maxLength": 64
+        },
+        "level": {
+          "type": "integer",
+          "description": "Current hero level (1 to 9999)."
+        },
+        "xp": {
+          "type": "integer",
+          "description": "Current experience toward next level."
+        },
+        "gold": {
+          "type": "integer",
+          "description": "Current hero gold currency."
+        },
+        "kills": {
+          "type": "integer",
+          "description": "Total monsters defeated."
+        },
+        "rebirths": {
+          "type": "integer",
+          "description": "Total completed rebirths (each grants 1.5x damage multiplier)."
+        },
+        "attributePoints": {
+          "type": "integer",
+          "description": "Unspent base attribute points."
+        },
+        "talentPoints": {
+          "type": "integer",
+          "description": "Unspent talent tree points."
+        },
+        "attributes": {
+          "type": "object",
+          "description": "Base character attributes (fuerza, agilidad, vitalidad, inteligencia, suerte)."
+        },
+        "dragonHearts": {
+          "type": "object",
+          "description": "Counts of the 5 elemental dragon hearts owned by the player."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of initial profile creation."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of latest profile sync."
+        }
+      },
+      "required": [
+        "uid",
+        "playerName",
+        "raceId",
+        "classId",
+        "difficultyId",
+        "level",
+        "xp",
+        "gold",
+        "kills",
+        "rebirths",
+        "attributePoints",
+        "talentPoints",
+        "attributes",
+        "dragonHearts",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "LeaderboardEntry": {
+      "title": "LeaderboardEntry",
+      "description": "Public non-PII hero ranking record for Top Dinero, Kills, Nivel, and Renacimientos.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Firebase Auth UID of the player.",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "playerName": {
+          "type": "string",
+          "description": "Public hero display name (no PII).",
+          "minLength": 1,
+          "maxLength": 24
+        },
+        "clanName": {
+          "type": "string",
+          "description": "Public clan display name.",
+          "minLength": 1,
+          "maxLength": 28
+        },
+        "clanTag": {
+          "type": "string",
+          "description": "Uppercase clan tag.",
+          "minLength": 2,
+          "maxLength": 5,
+          "pattern": "^[A-Z0-9]+$"
+        },
+        "clanColor": {
+          "type": "string",
+          "description": "Hex color of clan banner.",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "titleName": {
+          "type": "string",
+          "description": "Display text of equipped title.",
+          "maxLength": 48
+        },
+        "raceId": {
+          "type": "string",
+          "description": "Selected RPG race identifier.",
+          "enum": ["humano", "elfo", "enano", "draconido", "espectro_raza"]
+        },
+        "classId": {
+          "type": "string",
+          "description": "Selected RPG class identifier.",
+          "enum": ["caballero_runico", "piromago", "asesino_sombras", "paladin_solar", "cazador_dragones"]
+        },
+        "difficultyId": {
+          "type": "string",
+          "description": "Active difficulty tier.",
+          "enum": ["normal", "dificil", "pesadilla", "abismal", "infierno"]
+        },
+        "gold": {
+          "type": "integer",
+          "description": "Gold score for Top Dinero."
+        },
+        "kills": {
+          "type": "integer",
+          "description": "Kills score for Top Kills."
+        },
+        "level": {
+          "type": "integer",
+          "description": "Level score (1..9999) for Top Nivel."
+        },
+        "rebirths": {
+          "type": "integer",
+          "description": "Rebirth count for Top Renacimientos."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of initial ranking entry."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of latest score sync."
+        }
+      },
+      "required": [
+        "uid",
+        "playerName",
+        "raceId",
+        "classId",
+        "difficultyId",
+        "gold",
+        "kills",
+        "level",
+        "rebirths",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "OnlinePlayer": {
+      "title": "OnlinePlayer",
+      "description": "Real-time multiplayer presence and avatar transform for connected players across Plaza del Alba and Templo del Velo.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "playerName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 24
+        },
+        "clanName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 28
+        },
+        "clanTag": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 5,
+          "pattern": "^[A-Z0-9]+$"
+        },
+        "clanColor": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "raceId": {
+          "type": "string",
+          "enum": ["humano", "elfo", "enano", "draconido", "espectro_raza"]
+        },
+        "classId": {
+          "type": "string",
+          "enum": ["caballero_runico", "piromago", "asesino_sombras", "paladin_solar", "cazador_dragones"]
+        },
+        "level": {
+          "type": "integer"
+        },
+        "rebirths": {
+          "type": "integer"
+        },
+        "titleName": {
+          "type": "string",
+          "maxLength": 48
+        },
+        "mapId": {
+          "type": "string",
+          "enum": ["plaza", "templo"]
+        },
+        "x": {
+          "type": "number"
+        },
+        "z": {
+          "type": "number"
+        },
+        "yaw": {
+          "type": "number"
+        },
+        "isMoving": {
+          "type": "boolean"
+        },
+        "isOnline": {
+          "type": "boolean"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "uid",
+        "playerName",
+        "clanName",
+        "clanTag",
+        "clanColor",
+        "raceId",
+        "classId",
+        "level",
+        "rebirths",
+        "mapId",
+        "x",
+        "z",
+        "yaw",
+        "isMoving",
+        "isOnline",
+        "updatedAt"
+      ]
+    },
+    "ChatMessage": {
+      "title": "ChatMessage",
+      "description": "Real-time multiplayer chat message with sender clan badge and map context.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "uid": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "playerName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 24
+        },
+        "clanName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 28
+        },
+        "clanTag": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 5,
+          "pattern": "^[A-Z0-9]+$"
+        },
+        "clanColor": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "channel": {
+          "type": "string",
+          "enum": ["global", "clan"]
+        },
+        "mapId": {
+          "type": "string",
+          "enum": ["plaza", "templo"]
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "uid",
+        "playerName",
+        "clanName",
+        "clanTag",
+        "clanColor",
+        "channel",
+        "mapId",
+        "text",
+        "createdAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/players/{userId}": {
+      "schema": {
+        "$ref": "#/entities/PlayerProfile"
+      },
+      "description": "Private owner-only RPG save document keyed by Firebase Auth UID."
+    },
+    "/leaderboard/{userId}": {
+      "schema": {
+        "$ref": "#/entities/LeaderboardEntry"
+      },
+      "description": "Publicly readable (authenticated) ranking snapshot without PII, writable only by owner."
+    },
+    "/online_players/{userId}": {
+      "schema": {
+        "$ref": "#/entities/OnlinePlayer"
+      },
+      "description": "Live multiplayer presence and coordinates for active heroes across maps."
+    },
+    "/chat_messages/{messageId}": {
+      "schema": {
+        "$ref": "#/entities/ChatMessage"
+      },
+      "description": "Immutable real-time chat messages with sender clan metadata."
+    }
+  }
+}
